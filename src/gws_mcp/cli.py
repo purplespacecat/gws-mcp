@@ -40,7 +40,12 @@ def main(argv: list[str] | None = None) -> int:
         print("Authenticated. Token stored in the OS keyring (nothing written to disk).")
         return 0
 
-    # Default: run the MCP server on stdio.
+    # Default: run the MCP server on stdio. Logging goes to stderr (stdout is
+    # the protocol channel) — this is also the write-audit trail.
+    import logging
+
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s: %(message)s")
+
     from .server import run
 
     run()

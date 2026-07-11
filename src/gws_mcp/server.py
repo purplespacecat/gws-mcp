@@ -1,13 +1,13 @@
 """The MCP server (stdio).
 
-Phase 1: skeleton + auth only. Service tools (Tasks → Calendar → Drive) land
-in later phases, every mutating tool behind the write-approval layer.
+Phase 2: auth + Google Tasks. Calendar and Drive land in later phases.
 
 Conventions that MUST hold as tools are added (see CONTRIBUTING.md):
 - read tools:  list_* / get_* / search_* / read_*   → ToolAnnotations(readOnlyHint=True)
 - write tools: create_* / update_* / complete_* / move_* / trash_* / delete_*
   → never execute without human approval (elicitation, or two-step confirm
-  fallback), destructive ones additionally ToolAnnotations(destructiveHint=True).
+  fallback via `confirm_write`), destructive ones additionally
+  ToolAnnotations(destructiveHint=True).
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from __future__ import annotations
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 
-from . import auth
+from . import approval, auth, tasks
 
 INSTRUCTIONS = """\
 Google Tasks, Calendar and Drive for this user's personal account.
@@ -35,6 +35,19 @@ mcp = FastMCP("gws-mcp", instructions=INSTRUCTIONS)
 def auth_status() -> dict:
     """Report Google authentication status (never contains secret material)."""
     return auth.auth_state()
+
+
+@mcp.tool(annotations=ToolAnnotations(readOnlyHint=False))
+async def confirm_write(confirm_token: str) -> dict:
+    """Execute a previously previewed write (fallback approval mode).
+
+    Call ONLY after the user has explicitly approved the preview returned by a
+    write tool. Tokens are single-use and expire after 5 minutes.
+    """
+    return await approval.confirm_pending(confirm_token)
+
+
+tasks.register(mcp)
 
 
 def run() -> None:
