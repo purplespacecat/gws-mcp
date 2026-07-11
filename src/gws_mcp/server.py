@@ -1,6 +1,6 @@
 """The MCP server (stdio).
 
-Phase 3: auth + Google Tasks + Google Calendar. Drive lands in Phase 4.
+Phase 4: auth + Google Tasks + Calendar + Drive — the full designed surface.
 
 Conventions that MUST hold as tools are added (see CONTRIBUTING.md):
 - read tools:  list_* / get_* / search_* / read_*   → ToolAnnotations(readOnlyHint=True)
@@ -15,7 +15,7 @@ from __future__ import annotations
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 
-from . import approval, auth, gcal, tasks
+from . import approval, auth, drive, gcal, tasks
 
 INSTRUCTIONS = """\
 Google Tasks, Calendar and Drive for this user's personal account.
@@ -49,6 +49,7 @@ async def confirm_write(confirm_token: str) -> dict:
 
 tasks.register(mcp)
 gcal.register(mcp)
+drive.register(mcp)
 
 
 def run() -> None:
