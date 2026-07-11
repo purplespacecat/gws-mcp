@@ -29,3 +29,13 @@ def memory_keyring(monkeypatch) -> dict:
     monkeypatch.setattr(keyring, "set_password", _set)
     monkeypatch.setattr(keyring, "delete_password", _delete)
     return store
+
+
+@pytest.fixture(autouse=True)
+def clean_pending_writes():
+    """The approval layer's token stash is module-global — isolate tests."""
+    from gws_mcp import approval
+
+    approval._pending.clear()
+    yield
+    approval._pending.clear()
