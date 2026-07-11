@@ -1,6 +1,6 @@
 [project]
 name = "gws-mcp"
-version = "0.1.0.dev0"
+version = "0.1.0"
 description = "MCP server for Google Tasks/Calendar/Drive — every write requires explicit human approval."
 readme = "README.md"
 license = "MIT"

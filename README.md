@@ -4,8 +4,9 @@ A small, self-contained **MCP server for Google Tasks, Calendar, and Drive** —
 read-write, with one hard rule: **every write requires explicit human
 approval** before it executes.
 
-> **Status: pre-alpha.** Design is settled; implementation is in progress.
-> Nothing here is usable yet.
+> **Status: alpha (v0.1.0).** The full designed surface — 25 tools across
+> Tasks, Calendar, and Drive — is implemented and tested (46 tests, both
+> approval modes). Not yet battle-hardened against real-world API quirks.
 
 ## Why another Google MCP?
 
@@ -59,6 +60,31 @@ Python 3.12+ · [`uv`](https://docs.astral.sh/uv/) · official
 [`mcp`](https://github.com/modelcontextprotocol/python-sdk) SDK (FastMCP,
 stdio) · `google-api-python-client` + `google-auth-oauthlib` · `keyring` ·
 pytest + ruff.
+
+## Quick start
+
+1. **Bring your own OAuth client** (one-time, ~30 min): in the Google Cloud
+   console create a project, enable the **Tasks**, **Calendar**, and **Drive**
+   APIs, create an OAuth 2.0 **Desktop app** client, and download its JSON to
+   `~/.config/gws-mcp/credentials.json` (`chmod 600`). No credentials ever
+   ship with, or are stored by, this project — the OAuth grant lives in your
+   OS keyring.
+2. **Authenticate** (interactive, opens a browser):
+   ```bash
+   git clone https://github.com/purplespacecat/gws-mcp && cd gws-mcp
+   uv sync
+   uv run gws-mcp auth          # then: uv run gws-mcp auth --status
+   ```
+3. **Wire it into your MCP client** (stdio):
+   ```bash
+   # Claude Code
+   claude mcp add google-workspace -- uv --directory /path/to/gws-mcp run gws-mcp
+   # Gemini CLI
+   gemini mcp add google-workspace uv -- --directory /path/to/gws-mcp run gws-mcp
+   ```
+   In clients that support MCP elicitation, write approvals appear as UI
+   prompts; in clients that don't, writes return a preview + one-time confirm
+   token and nothing mutates until `confirm_write` is called.
 
 ## Contributing
 
