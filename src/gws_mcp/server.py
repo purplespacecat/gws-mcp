@@ -1,13 +1,13 @@
 """The MCP server (stdio).
 
-Phase 2: auth + Google Tasks. Calendar and Drive land in later phases.
+Phase 3: auth + Google Tasks + Google Calendar. Drive lands in Phase 4.
 
 Conventions that MUST hold as tools are added (see CONTRIBUTING.md):
 - read tools:  list_* / get_* / search_* / read_*   → ToolAnnotations(readOnlyHint=True)
-- write tools: create_* / update_* / complete_* / move_* / trash_* / delete_*
-  → never execute without human approval (elicitation, or two-step confirm
-  fallback via `confirm_write`), destructive ones additionally
-  ToolAnnotations(destructiveHint=True).
+- write tools: create_* / update_* / complete_* / move_* / respond_* /
+  trash_* / delete_* → never execute without human approval (elicitation, or
+  two-step confirm fallback via `confirm_write`), destructive ones
+  additionally ToolAnnotations(destructiveHint=True).
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from __future__ import annotations
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 
-from . import approval, auth, tasks
+from . import approval, auth, gcal, tasks
 
 INSTRUCTIONS = """\
 Google Tasks, Calendar and Drive for this user's personal account.
@@ -48,6 +48,7 @@ async def confirm_write(confirm_token: str) -> dict:
 
 
 tasks.register(mcp)
+gcal.register(mcp)
 
 
 def run() -> None:

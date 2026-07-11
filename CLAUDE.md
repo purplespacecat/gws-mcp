@@ -13,8 +13,11 @@ structural changes.
    first call in fallback mode.
 2. **Tool naming is the contract**: reads are `list_*/get_*/search_*/read_*`
    (+ `readOnlyHint`); writes are `create_*/update_*/complete_*/move_*/
-   trash_*/delete_*` (+ `destructiveHint` where irreversible). Drive delete is
-   trash, never hard delete.
+   respond_*/trash_*/delete_*` (+ `destructiveHint` where irreversible).
+   Drive delete is trash, never hard delete. The contract is enforced
+   mechanically by `test_server.py::test_naming_convention_matches_annotations`
+   — extending the prefix set means updating it here, in CONTRIBUTING.md, and
+   in that test, in the same PR.
 3. **Scopes are a ceiling** (`tasks`, `calendar.events`, `drive` — in
    `config.py`): adding one needs a discussion issue, not a commit.
 4. **No secret material on disk or in output**: tokens live in the OS keyring;
