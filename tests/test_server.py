@@ -20,7 +20,7 @@ WRITE_PREFIXES = (
     "confirm_",
 )
 
-PHASE3_TOOLS = {
+ALL_TOOLS = {
     "auth_status",
     "confirm_write",
     # Tasks
@@ -41,13 +41,21 @@ PHASE3_TOOLS = {
     "update_event",
     "respond_to_event",
     "delete_event",
+    # Drive
+    "search_files",
+    "get_file_metadata",
+    "read_file_content",
+    "create_file",
+    "update_file_content",
+    "move_file",
+    "trash_file",
 }
 
 
-async def test_phase3_tool_inventory():
+async def test_tool_inventory_is_the_full_designed_surface():
     async with client_session(mcp) as client:
         names = {t.name for t in (await client.list_tools()).tools}
-    assert names == PHASE3_TOOLS
+    assert names == ALL_TOOLS
 
 
 async def test_naming_convention_matches_annotations():
@@ -70,6 +78,14 @@ async def test_deletes_are_flagged_destructive():
         tools = {t.name: t for t in (await client.list_tools()).tools}
     assert tools["delete_task"].annotations.destructiveHint is True
     assert tools["delete_event"].annotations.destructiveHint is True
+    assert tools["trash_file"].annotations.destructiveHint is True
+
+
+async def test_drive_has_no_hard_delete():
+    """Design rule: Drive removal is trash-only."""
+    async with client_session(mcp) as client:
+        names = {t.name for t in (await client.list_tools()).tools}
+    assert "delete_file" not in names and "trash_file" in names
 
 
 async def test_auth_status_roundtrip_unauthenticated():
