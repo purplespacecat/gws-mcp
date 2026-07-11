@@ -1,0 +1,26 @@
+# CI: lint + tests. Deliberately uses NO third-party actions (only the
+# GitHub-owned checkout) — uv comes from its official install script. The
+# workflow token is read-only repo-wide (Actions settings) and again here.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Sync (locked)
+        run: uv sync --locked
+      - name: Lint
+        run: uv run ruff check src tests
+      - name: Tests
+        run: uv run pytest -q

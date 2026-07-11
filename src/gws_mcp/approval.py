@@ -120,11 +120,16 @@ async def confirm_pending(confirm_token: str) -> dict:
     _prune_expired()
     pending = _pending.pop(confirm_token, None)
     if pending is None:
+        # Security signal: repeated bad tokens may be a model probing the
+        # fallback gate. Always logged, never silently swallowed.
+        audit.warning("REJECTED confirm attempt with unknown/used/expired token")
         return {
             "status": "error",
             "detail": "Unknown, already-used, or expired confirm token. Nothing was "
             "executed. Re-run the write tool to get a fresh preview and token.",
         }
+    # The token is consumed BEFORE execution — even if the operation raises,
+    # it can never be re-run from the same approval.
     outcome = await _run(pending.execute)
     audit.info("EXECUTED (token-confirmed): %s", pending.description)
     return {"status": "executed", "approved_via": "confirm_token", "result": outcome}
