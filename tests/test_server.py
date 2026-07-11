@@ -9,11 +9,21 @@ from mcp.shared.memory import create_connected_server_and_client_session as clie
 from gws_mcp.server import mcp
 
 READ_PREFIXES = ("list_", "get_", "search_", "read_", "auth_")
-WRITE_PREFIXES = ("create_", "update_", "complete_", "move_", "trash_", "delete_", "confirm_")
+WRITE_PREFIXES = (
+    "create_",
+    "update_",
+    "complete_",
+    "move_",
+    "respond_",
+    "trash_",
+    "delete_",
+    "confirm_",
+)
 
-PHASE2_TOOLS = {
+PHASE3_TOOLS = {
     "auth_status",
     "confirm_write",
+    # Tasks
     "list_task_lists",
     "list_tasks",
     "get_task",
@@ -22,13 +32,22 @@ PHASE2_TOOLS = {
     "complete_task",
     "move_task",
     "delete_task",
+    # Calendar
+    "list_calendars",
+    "list_events",
+    "search_events",
+    "get_event",
+    "create_event",
+    "update_event",
+    "respond_to_event",
+    "delete_event",
 }
 
 
-async def test_phase2_tool_inventory():
+async def test_phase3_tool_inventory():
     async with client_session(mcp) as client:
         names = {t.name for t in (await client.list_tools()).tools}
-    assert names == PHASE2_TOOLS
+    assert names == PHASE3_TOOLS
 
 
 async def test_naming_convention_matches_annotations():
@@ -46,10 +65,11 @@ async def test_naming_convention_matches_annotations():
             assert t.annotations and not t.annotations.readOnlyHint, t.name
 
 
-async def test_delete_task_is_flagged_destructive():
+async def test_deletes_are_flagged_destructive():
     async with client_session(mcp) as client:
         tools = {t.name: t for t in (await client.list_tools()).tools}
     assert tools["delete_task"].annotations.destructiveHint is True
+    assert tools["delete_event"].annotations.destructiveHint is True
 
 
 async def test_auth_status_roundtrip_unauthenticated():

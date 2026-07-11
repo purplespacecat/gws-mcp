@@ -13,6 +13,11 @@ rules are few but firm.
   convenient.
 - **No new OAuth scopes** without a discussion issue first. The scope set
   (`tasks`, `calendar.events`, `drive`) is a deliberate ceiling.
+- **Tool naming is a contract** (enforced by a test): reads are
+  `list_*/get_*/search_*/read_*` and carry `readOnlyHint`; writes are
+  `create_*/update_*/complete_*/move_*/respond_*/trash_*/delete_*` and are
+  approval-gated, with `destructiveHint` where irreversible. A new prefix
+  means updating CLAUDE.md, this file, and the enforcement test in one PR.
 - **No secrets, ever** — not in code, tests, fixtures, or CI. Tokens belong in
   the OS keyring; `credentials.json` stays outside the repo.
 - **Dependencies are a curated set** (official Google + MCP SDKs, `keyring`).
