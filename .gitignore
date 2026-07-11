@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# uv — note: uv.lock IS committed, deliberately not listed here
+
+# Credentials — NEVER commit. The server reads credentials.json from
+# ~/.config/gws-mcp/ (outside the repo) and stores tokens in the OS keyring,
+# but belt-and-braces in case one lands here during development:
+credentials.json
+client_secret*.json
+token*.json
+*.pem
+.env
+.env.*
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
