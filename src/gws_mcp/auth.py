@@ -17,7 +17,8 @@ import keyring
 import keyring.errors
 from google.oauth2.credentials import Credentials
 
-from .config import KEYRING_SERVICE, KEYRING_USERNAME, SCOPES, credentials_path
+from . import config
+from .config import KEYRING_SERVICE, KEYRING_USERNAME, credentials_path
 
 
 class NotAuthenticatedError(RuntimeError):
@@ -42,7 +43,7 @@ def _stored_credentials() -> Credentials | None:
     if raw is None:
         return None
     try:
-        return Credentials.from_authorized_user_info(json.loads(raw), scopes=SCOPES)
+        return Credentials.from_authorized_user_info(json.loads(raw), scopes=config.scopes())
     except (ValueError, KeyError):
         return None  # unreadable/legacy blob — treat as unauthenticated
 
@@ -84,7 +85,7 @@ def run_auth_flow() -> Credentials:
             "Drive APIs enabled), download its JSON there (chmod 600), or point "
             "GWS_MCP_CREDENTIALS at it."
         )
-    flow = InstalledAppFlow.from_client_secrets_file(str(path), scopes=SCOPES)
+    flow = InstalledAppFlow.from_client_secrets_file(str(path), scopes=config.scopes())
     creds = flow.run_local_server(port=0)
     save_credentials(creds)
     return creds
@@ -97,7 +98,7 @@ def auth_state() -> dict:
         "credentials_file": str(credentials_path()),
         "credentials_file_present": credentials_path().is_file(),
         "token_storage": f"OS keyring (service '{KEYRING_SERVICE}')",
-        "scopes": SCOPES,
+        "scopes": config.scopes(),
     }
     creds = _stored_credentials()
     if creds is None:

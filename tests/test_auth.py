@@ -45,6 +45,49 @@ class TestUnauthenticated:
         assert auth.clear_credentials() is False
 
 
+TASKS_SCOPE = "https://www.googleapis.com/auth/tasks"
+
+
+class TestScopeNarrowing:
+    """GWS_MCP_SERVICES narrows the scopes the auth flow requests — a
+    tasks-only install never asks for the restricted drive scope."""
+
+    def test_scopes_follow_enabled_services(self, monkeypatch):
+        from gws_mcp import config
+
+        monkeypatch.delenv("GWS_MCP_SERVICES", raising=False)
+        assert config.scopes() == SCOPES  # default: the full ceiling
+        monkeypatch.setenv("GWS_MCP_SERVICES", "tasks")
+        assert config.scopes() == [TASKS_SCOPE]
+
+    def test_state_reports_enabled_scopes_only(self, monkeypatch):
+        monkeypatch.setenv("GWS_MCP_SERVICES", "tasks")
+        assert auth.auth_state()["scopes"] == [TASKS_SCOPE]
+
+    def test_auth_flow_requests_enabled_scopes_only(self, monkeypatch, tmp_path, memory_keyring):
+        client_file = tmp_path / "credentials.json"
+        client_file.write_text("{}")
+        monkeypatch.setenv("GWS_MCP_CREDENTIALS", str(client_file))
+        monkeypatch.setenv("GWS_MCP_SERVICES", "tasks")
+
+        requested: dict = {}
+
+        class FakeFlow:
+            @classmethod
+            def from_client_secrets_file(cls, path, scopes):
+                requested["scopes"] = scopes
+                return cls()
+
+            def run_local_server(self, port):
+                return make_creds()
+
+        import google_auth_oauthlib.flow
+
+        monkeypatch.setattr(google_auth_oauthlib.flow, "InstalledAppFlow", FakeFlow)
+        auth.run_auth_flow()
+        assert requested["scopes"] == [TASKS_SCOPE]
+
+
 class TestStoredToken:
     def test_save_load_roundtrip(self, memory_keyring):
         auth.save_credentials(make_creds())

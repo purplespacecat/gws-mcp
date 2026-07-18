@@ -97,8 +97,11 @@ claude mcp add google-tasks --env GWS_MCP_SERVICES=tasks -- \
   uv --directory /path/to/gws-mcp run gws-mcp
 ```
 
-This filters which *tools* the server exposes; the OAuth grant itself still
-carries the scopes you consented to in `gws-mcp auth`.
+This narrows both the *tools* the server exposes and the *scopes*
+`gws-mcp auth` requests — a Tasks-only install never asks for the restricted
+`drive` scope. Run the auth flow with the same value set
+(`GWS_MCP_SERVICES=tasks uv run gws-mcp auth`); widening services later means
+re-running it to consent to the added scopes.
 
 ## Contributing
 
