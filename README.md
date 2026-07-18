@@ -10,9 +10,16 @@ approval** before it executes.
 
 ## Why another Google MCP?
 
-There is no official Google MCP server for consumer Workspace data, and the
-community options are broad (10+ services) and mostly unmaintained. This one
-is deliberately narrow:
+Google now ships [official remote MCP servers](https://developers.google.com/workspace/guides/configure-mcp-servers)
+(Developer Preview) for **Gmail, Drive, Calendar, Chat and People** — hosted
+HTTP endpoints you wire into a client as connectors. They do not cover
+**Google Tasks**, they execute writes as soon as the model calls the tool
+(no built-in approval step), and they are remote by design. Community
+alternatives remain broad (10+ services) and mostly unmaintained.
+
+This server is deliberately narrow and local — it pairs well with the
+official connectors, filling the Tasks gap and covering Calendar/Drive when
+you want approval-gated writes or a fully local path:
 
 - **Three services only** — Tasks, Calendar, Drive. Smaller code, smaller
   audit surface.
