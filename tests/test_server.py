@@ -88,6 +88,59 @@ async def test_drive_has_no_hard_delete():
     assert "delete_file" not in names and "trash_file" in names
 
 
+CORE_TOOLS = {"auth_status", "confirm_write"}
+TASKS_TOOLS = {
+    "list_task_lists",
+    "list_tasks",
+    "get_task",
+    "create_task",
+    "update_task",
+    "complete_task",
+    "move_task",
+    "delete_task",
+}
+
+
+async def test_service_filter_tasks_only():
+    """create_server(("tasks",)) exposes core tools + Tasks tools, nothing else."""
+    from gws_mcp.server import create_server
+
+    async with client_session(create_server(("tasks",))) as client:
+        names = {t.name for t in (await client.list_tools()).tools}
+    assert names == CORE_TOOLS | TASKS_TOOLS
+
+
+async def test_service_filter_defaults_to_full_surface():
+    from gws_mcp.server import create_server
+
+    async with client_session(create_server()) as client:
+        names = {t.name for t in (await client.list_tools()).tools}
+    assert names == ALL_TOOLS
+
+
+async def test_service_filter_rejects_unknown_service():
+    import pytest
+
+    from gws_mcp.server import create_server
+
+    with pytest.raises(ValueError, match="gmail"):
+        create_server(("tasks", "gmail"))
+
+
+def test_enabled_services_env_parsing(monkeypatch):
+    """GWS_MCP_SERVICES is a comma-separated, whitespace-tolerant subset."""
+    from gws_mcp import config
+
+    monkeypatch.delenv("GWS_MCP_SERVICES", raising=False)
+    assert config.enabled_services() == ("tasks", "calendar", "drive")
+
+    monkeypatch.setenv("GWS_MCP_SERVICES", "tasks, calendar")
+    assert config.enabled_services() == ("tasks", "calendar")
+
+    monkeypatch.setenv("GWS_MCP_SERVICES", "tasks")
+    assert config.enabled_services() == ("tasks",)
+
+
 async def test_auth_status_roundtrip_unauthenticated():
     async with client_session(mcp) as client:
         result = await client.call_tool("auth_status", {})

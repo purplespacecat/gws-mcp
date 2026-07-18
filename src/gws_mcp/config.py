@@ -18,6 +18,27 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 
+# Services the server can expose, in registration order.
+KNOWN_SERVICES = ("tasks", "calendar", "drive")
+
+
+def enabled_services() -> tuple[str, ...]:
+    """Services to expose, from GWS_MCP_SERVICES (comma-separated subset of
+    KNOWN_SERVICES); defaults to all. Lets one install serve e.g. only Tasks
+    alongside Google's official remote MCP servers for the rest."""
+    env = os.environ.get("GWS_MCP_SERVICES")
+    if not env:
+        return KNOWN_SERVICES
+    requested = tuple(s.strip() for s in env.split(",") if s.strip())
+    unknown = [s for s in requested if s not in KNOWN_SERVICES]
+    if unknown:
+        raise ValueError(
+            f"GWS_MCP_SERVICES contains unknown service(s) {unknown}; "
+            f"known: {', '.join(KNOWN_SERVICES)}"
+        )
+    return requested
+
+
 # OS keyring coordinates for the OAuth token (never stored on disk).
 KEYRING_SERVICE = "gws-mcp"
 KEYRING_USERNAME = "oauth-token"

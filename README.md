@@ -86,6 +86,20 @@ pytest + ruff.
    prompts; in clients that don't, writes return a preview + one-time confirm
    token and nothing mutates until `confirm_write` is called.
 
+### Serving a subset of services
+
+Set `GWS_MCP_SERVICES` (comma-separated: `tasks`, `calendar`, `drive`) to
+expose only some services — e.g. only Tasks, if you use Google's official
+remote MCP servers for Calendar and Drive:
+
+```bash
+claude mcp add google-tasks --env GWS_MCP_SERVICES=tasks -- \
+  uv --directory /path/to/gws-mcp run gws-mcp
+```
+
+This filters which *tools* the server exposes; the OAuth grant itself still
+carries the scopes you consented to in `gws-mcp auth`.
+
 ## Contributing
 
 Issues and PRs are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). All
